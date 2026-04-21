@@ -11,6 +11,8 @@ To ensure the Admin machine always resides at the IP-address ending in `.20` and
 3. Execute `./set_static_ip.sh`
 
 * **Note:**
- * If you just want assign a static IP to any machine/PC at OS-side, comment out [with an hash (`#`) on front of the line-s] the part-s of the script you don't need.
+ * Here a script is inevitable because as soon as the network manager no longer has a working internet connection, he would try constantly to reconfigure & start the local NICs ports.
+ * Therefore, before you make the script executable & start it, use the `ip a` command to collect all the necessary information about your machine & adjust the script accordingly. Explanations are also in the form of comments within the script itself.
+ * If necessary, comment with a hash (`#`) at the beginning of each line that you should not need.
 
 **Merit to:** [Gemini AI](https://deepmind.google/technologies/gemini/) (Collaboration for Network Stability)
