@@ -28,6 +28,7 @@ sudo nmcli con add type ethernet con-name "VM-Bridge-Port" ifname enp65s0f1np1 \
 # --- 3. Finalize ---
 # Comment out with an hash (`#`) on front of "VM-Bridge-Port" line if you set only a static IP.
 # Never comment out the (first) line containing "Admin-Port-1" or any name you given.
+# Even don't comment out the third line that restart the 'Network Manager'
 sudo nmcli connection up "Admin-Port-1"
 sudo nmcli connection up "VM-Bridge-Port"
 sudo systemctl restart NetworkManager
