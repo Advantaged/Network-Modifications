@@ -38,3 +38,6 @@ sudo systemctl restart NetworkManager
 # delete the second name & the separation sign `|enp65s0f1np1`.
 echo "Verification:"
 ip -4 addr show | grep -E "enp65s0f0np0|enp65s0f1np1"
+
+echo "✅ Done & Enjoy ❗️"
+
