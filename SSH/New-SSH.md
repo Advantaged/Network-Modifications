@@ -1,107 +1,55 @@
 # New-SSH.md
-## Establishing the 'status quo'
-```bash
-# 1. Inspect existing environment
-ls -l ~/.ssh
 
-# 2. Backup old keys (ISO 9001 Requirement)
-# Path: /run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/
-# The script will ask: "Old SSH keys found. Do you want to back them up before generating new ones? (y/n)"
-# If 'y', then: "Please enter backup path:" 
+## Generalization & Compatibility Note
+**Standardized procedure for establishing, hardening, and maintaining SSH Key-Based Authentication.**
+* **Note on Compatibility:** This guide uses **CachyOS** (Arch-based) for the Manager-Machine and **Debian/Raspberry Pi OS** for clients as primary examples. However, the logic and verification steps apply to **all Linux distributions** (Fedora, Ubuntu, etc.) by adjusting the package manager commands (e.g., using `apt` or `dnf` instead of `pacman`).
 
-mkdir -p /run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/$(date +%Y%m%d_%H%M%S)
-cp -p ~/.ssh/id_* /run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/$(date +%Y%m%d_%H%M%S)/
+---
 
+## 1. Scope & Definitions
+The goal is to move from insecure password authentication to **Ed25519 Key-Based Authentication** on a non-standard port.
 
+* **Manager-Machine (Host):** Your central PC (CachyOS Admin-Workstation). Holds the **Private Key**.
+* **Client (Target-Machine):** Any device being managed (Pi-hole, SFF-PC, Switch). Holds the **Public Key**.
+* **Management-User:** Your local user (e.g., `tony`).
+* **Target-User:** The user on the Client (e.g., `admin_pi`). **Must have sudo rights.**
 
-```bash
-# ISO 9001 Reset - Performed on 2026-04-25
-# 1. Full Backup of legacy keys and configs to:
-# /run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/20260425/
+---
 
-# 2. New Master Key Generation (Ed25519)
-ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 -C "Manager-PC-2026"
+## 2. Critical Pre-Check: Legacy Systems
+**WARNING:** If a Client (e.g., `lena-24`) already has `PasswordAuthentication no` set in its `/etc/ssh/sshd_config` and you have deleted the corresponding private key on your Manager-Machine, **Remote Access is LOST.**
 
-# 3. New Config Strategy
-# We will manually add hosts as we deploy (Pi-hole, OPNsense, CRS326)
-touch ~/.ssh/config
-chmod 600 ~/.ssh/config
+**Recovery Options:**
+1.  **Physical Access:** Plug in a keyboard/monitor to the Client.
+2.  **Temporary Re-enabling:** Edit `/etc/ssh/sshd_config` on the client, set `PasswordAuthentication yes`, and `sudo systemctl restart ssh`.
+3.  **Key Injection:** Manually append your new `id_ed25519.pub` content to `~/.ssh/authorized_keys` on the Client.
 
-# 4. First Target Deployment (Pi-hole)
-ssh-copy-id -i ~/.ssh/id_ed25519.pub admin_pi@192.168.1.10
-```
+---
 
+## 3. The ISO 9001 Action Plan
 
-# New-SSH.md
+### Step A: Clean Slate (Manager-Machine)
+1. Backup old keys to ZFS: `/run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/`
+2. Generate new Master Key: `ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 -C "Manager-PC-2026"`
 
-### 1. Pre-Setup: Backup & Cleanup
-```bash
-# Define Archive Path
-BACKUP_DIR="/run/media/tony/ARCO-ZFS-001/Network/SSH/Old-SSH/$(date +%Y%m%d)"
+### Step B: The "Two-Tab" Port Transition (Pi-hole Example)
+1. **Tab 1:** Stay logged in via current SSH.
+2. **Edit Config:** `sudo nano /etc/ssh/sshd_config`
+   * Set `Port 52222` (or your chosen high port).
+   * Ensure `PubkeyAuthentication yes`.
+   * Keep `PasswordAuthentication yes` (Temporary!).
+3. **Restart Service:** `sudo systemctl restart ssh`.
+4. **Tab 2:** Attempt connection: `ssh -p 52222 admin_pi@192.168.1.10`.
+5. **Finalize:** If Tab 2 works, disable `PasswordAuthentication` in Tab 1, restart again, and test once more.
 
-# Backup legacy data
-mkdir -p "$BACKUP_DIR"
-mv ~/.ssh/* "$BACKUP_DIR/" 2>/dev/null
+### Step C: The "Teergrube" (Tar-pit)
+Once the real SSH moves to Port 52222, Port 22 is open.
+* **Action:** Install `endlessh` on the Client.
+* **Benefit:** Bots hitting Port 22 are trapped in a slow-motion connection, wasting their resources while your real port remains hidden.
 
-# Reset known_hosts (Clear old fingerprints)
-ssh-keygen -R 192.168.1.10
-```
+---
 
-### 2. Master Key Generation
-```bash
-# -t: Type, -N: Passphrase (empty), -f: Path, -C: Label
-ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519 -C "Manager-PC-2026"
+## 4. Automation
+The following script `ssh-manager.sh` automates the backup, key generation, and client deployment.
 
-# Secure config file permissions
-touch ~/.ssh/config
-chmod 600 ~/.ssh/config ~/.ssh/id_ed25519
-```
-
-### 3. Key Deployment (Initial Handshake)
-```bash
-# Syntax: ssh-copy-id -i [IdentityFile.pub] [RemoteUser]@[RemoteIP]
-ssh-copy-id -i ~/.ssh/id_ed25519.pub admin_pi@192.168.1.10
-```
-
-### 4. Client Configuration (`~/.ssh/config`)
-```bash
-# 1. Exit the current remote session
-exit
-
-# 2. Run this on the Manager-PC to save the quick-access shortcut:
-cat <<EOF >> ~/.ssh/config
-Host pi-hole
-    HostName 192.168.1.10
-    User admin_pi
-    IdentityFile ~/.ssh/id_ed25519
-EOF
-
-# 3. Final ISO 9001 Test (Passwordless login via alias)
-ssh pi-hole
-
-# 4. Verification/ terminal output
-ssh pi-hole               
-Linux pi-hole 6.12.75+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.12.75-1+rpt1 (2026-03-11) aarch64
-
-The programs included with the Debian GNU/Linux system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-permitted by applicable law.
-Last login: Sat Apr 25 11:26:13 2026 from 192.168.1.20
-admin_pi@pi-hole:~ $ >
-
-# SSH Connection Verified
-# Date: 2026-04-25 18:55
-# Status: SUCCESS
-
-# Access Command:
-ssh pi-hole
-
-# Verification:
-# - Logged in as: admin_pi
-# - Remote Host: 192.168.1.10
-# - Authentication: Ed25519 Key (Passwordless)
-
-```
+[See separate script file: ssh-manager.sh]
