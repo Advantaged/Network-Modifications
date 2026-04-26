@@ -1,5 +1,5 @@
 # New-SSH.md
-
+## Establishing the 'status quo'
 ```bash
 # 1. Inspect existing environment
 ls -l ~/.ssh
