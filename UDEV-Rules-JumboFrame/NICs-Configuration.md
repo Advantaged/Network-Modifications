@@ -16,7 +16,7 @@ sudo nano /etc/udev/rules.d/10-intel-x710.rules
 ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp10s0f0np0", RUN+="/usr/bin/ip link set %k up mtu 9000 txqueuelen 10000", RUN+="/usr/bin/ethtool -s %k speed 10000 duplex full autoneg off"
 
 ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp10s0f1np1", RUN+="/usr/bin/ip link set %k up mtu 9000 txqueuelen 10000", RUN+="/usr/bin/ethtool -s %k speed 10000 duplex full autoneg off"
-# This's a comment & at same time is ignored anyway. you can decide to let this comment or make your own or let an empty one.
+# This's a comment & at same time is ignored anyway. you can decide to let this comment in or make your own or let an empty one.
 ```
 * ***Note:*** Linux ignore last line of configuration file or script, hence, you can let this or other comment or let anyway an emtpy line at end.
 
