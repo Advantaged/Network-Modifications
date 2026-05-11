@@ -22,7 +22,7 @@ ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp10s0f1np1", RUN+="/usr/bin/ip link 
 
 ---
 
-* **Recommendation:** Complete the basics settings for your home-lab assigning a static IP like under [this link](tree/main/Assign-Static-IP/) explained & scripted.
+* **Recommendation:** Complete the basics settings for your home-lab assigning a static IP following [correlated link](https://github.com/Advantaged/Network-Modifications/tree/main/Assign-Static-IP) with explainations & script.
 
 ---
 
