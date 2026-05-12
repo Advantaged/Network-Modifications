@@ -26,6 +26,10 @@ ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp65s0f3np3", RUN+="/usr/bin/ip link 
 ```
 * ***Note:*** Linux ignore last line of configuration file or script, hence, you can let this or other comment or let anyway an emtpy line at end.
 
+3. **Reload & Trigger:**
+```bash
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
 ---
 
 * **Recommendation:** Complete the basics settings for your home-lab assigning a static IP following [correlated link](https://github.com/Advantaged/Network-Modifications/tree/main/Assign-Static-IP) with explainations & script.
