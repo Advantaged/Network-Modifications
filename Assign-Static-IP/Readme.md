@@ -12,8 +12,8 @@ To ensure the Admin machine always resides at the IP-address ending in `.20` and
 
 * **Note:**
  * Here a script is inevitable because as soon as the network manager no longer has a working internet connection, he would try constantly to reconfigure & start the local NICs ports.
+ * There are two scripts here, `set_static_ip.sh`  & `stat-pres-fc.sh`, the first (`set_static_ip.sh`) deletes all previous configurations in NetworkManager, the second (`stat-pres-fc.sh`) does not delete the current configuration of another NIC by default, this is useful when adding an additional network card.
  * Therefore, before you make the script executable & start it, use the `ip a` command to collect all the necessary information about your machine & adjust the script accordingly. Assure you choose the right `ifname` through the command `nmcli device status`, find the output of my machine below. Explanations are also in the form of comments within the script itself.
- * The script `stat-pres-fc.sh` does not delete the current configuration another NIC by default, this is useful when adding an additional network card.
  * If necessary, comment with a hash (`#`) at the beginning of each line that you should not need.
 
  ```bash
