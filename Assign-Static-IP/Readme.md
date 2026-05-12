@@ -1,4 +1,4 @@
-# Network-Modifications
+# Static IP
 This project documents the transition of a production home network to a managed infrastructure.
 
 ## Subfolder: Assign-Static-IP
